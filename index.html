@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cara</title>
+
+<style>
+  body{
+    margin:0;
+    background:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:100vh;
+  }
+
+  #img{
+    max-width:85vw;
+    max-height:70vh;
+    object-fit:contain;
+    transform-origin:center;
+    will-change:transform;
+    cursor:pointer;
+  }
+
+  @keyframes turboSpinShrink{
+    0%   { transform:rotate(0deg) scale(1); }
+    100% { transform:rotate(18000deg) scale(0.05); }
+  }
+
+  .turbo{
+    animation:turboSpinShrink 3s linear forwards;
+  }
+</style>
+</head>
+
+<body>
+<img id="img">
+
+<script>
+const IMG1="images/cara1.jpg";
+const IMG2="images/cara2.jpg";
+const SECRET_IMG="images/ricky.jpg";
+
+const img=document.getElementById("img");
+
+let showing=1;
+let clickStreak=0;
+let typed="";
+const SECRET="ricky";
+
+let locked=false;
+let timer=null;
+
+function setImage(src){
+  img.src=src;
+}
+
+function restore(){
+  setImage(showing===1?IMG1:IMG2);
+}
+
+function clearTimer(){
+  if(timer)clearTimeout(timer);
+}
+
+function flash(src,time=3000){
+  if(locked)return;
+  locked=true;
+
+  img.classList.remove("turbo");
+  img.style.transform="";
+  setImage(src);
+
+  clearTimer();
+  timer=setTimeout(()=>{
+    locked=false;
+    clickStreak=0;
+    restore();
+  },time);
+}
+
+function spinShrink(time=3000){
+  if(locked)return;
+  locked=true;
+
+  img.classList.remove("turbo");
+  void img.offsetWidth;
+  img.classList.add("turbo");
+
+  clearTimer();
+  timer=setTimeout(()=>{
+    img.classList.remove("turbo");
+    img.style.transform="";
+    locked=false;
+    clickStreak=0;
+    restore();
+  },time);
+}
+
+setImage(IMG1);
+
+img.addEventListener("click",()=>{
+  if(locked)return;
+
+  clickStreak++;
+  showing=showing===1?2:1;
+  restore();
+
+  if(clickStreak>=10) spinShrink();
+});
+
+window.addEventListener("keydown",(e)=>{
+  if(locked)return;
+
+  clickStreak=0;
+
+  if(e.key.length!==1)return;
+  typed+=e.key.toLowerCase();
+  if(typed.length>SECRET.length) typed=typed.slice(-SECRET.length);
+
+  if(typed===SECRET){
+    typed="";
+    flash(SECRET_IMG);
+  }
+});
+</script>
+</body>
+</html>
